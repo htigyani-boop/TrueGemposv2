@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#1a3c2e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="TrueGem POS"/>
+<title>TrueGem POS</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+:root{
+  --bg:#f5f2eb;
+  --card:#fff;
+  --accent:#1a3c2e;
+  --accent2:#2d6a4f;
+  --danger:#c0392b;
+  --muted:#888;
+  --border:#ddd;
+  --green-light:#e8f5e9;
+  --font:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--font);background:var(--bg);color:#222;min-height:100vh;overflow-x:hidden;}
+
+.topbar{background:var(--accent);color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.topbar-logo{font-size:18px;font-weight:700;letter-spacing:2px;}
+.topbar-sub{font-size:10px;opacity:.7;letter-spacing:1px;}
+.gift-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;text-align:center;}
+.gift-badge small{display:block;font-size:9px;opacity:.7;letter-spacing:1px;}
+.gift-badge strong{font-size:14px;}
+.printer-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font);}
+.printer-dot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;}
+.printer-dot.on{background:#4caf50;}
+
+.tabs{background:var(--accent);display:flex;border-top:1px solid rgba(255,255,255,.1);}
+.tab{flex:1;padding:8px 4px;text-align:center;font-size:11px;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:2px solid transparent;font-family:var(--font);}
+.tab.active{color:#fff;border-bottom:2px solid #fff;}
+
+.page{display:none;padding:12px;min-height:calc(100vh - 100px);}
+.page.active{display:block;}
+
+.card{background:var(--card);border-radius:8px;padding:12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.ctitle{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
+
+.btn{border:2px solid var(--accent);border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:var(--font);letter-spacing:.5px;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:active{opacity:.8;}
+.btn-outline{background:transparent;color:var(--accent);}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+
+.mode-row{display:flex;gap:8px;margin-bottom:12px;}
+.mode-btn{flex:1;padding:8px;border:2px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;text-align:center;background:transparent;color:var(--accent);}
+.mode-btn.active{background:var(--accent);color:#fff;}
+
+input,select{font-family:var(--font);font-size:13px;border:2px solid var(--border);border-radius:6px;padding:8px 10px;width:100%;background:#fff;color:#222;outline:none;}
+input:focus{border-color:var(--accent);}
+.input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:nowrap;}
+.input-row .lbl{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap;}
+.amt-box{background:var(--green-light);border:2px solid var(--accent);border-radius:6px;padding:8px 10px;font-size:14px;font-weight:700;color:var(--accent);min-width:75px;text-align:right;flex-shrink:0;}
+
+.prod-disp{border:2px solid var(--accent);background:var(--green-light);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--accent);min-height:36px;margin-bottom:8px;}
+.prod-disp.empty{border-color:var(--border);background:#f9f9f9;color:var(--muted);}
+
+.suggest-wrap{position:relative;margin-bottom:8px;}
+#suggestBox{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid var(--accent);border-top:none;border-radius:0 0 6px 6px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.sug-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;}
+.sug-item:active{background:var(--green-light);}
+.sug-code{color:var(--muted);font-size:10px;background:#f0f0f0;padding:1px 5px;border-radius:3px;}
+
+.twrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:var(--accent);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap;}
+td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.tr{text-align:right;}
+.tc{text-align:center;}
+.etbl{text-align:center;color:var(--muted);padding:20px;font-size:12px;}
+.del-btn{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;}
+.edit-btn{background:none;border:1px solid var(--accent2);color:var(--accent2);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;margin-right:3px;}
+
+.totals{background:var(--green-light);border-radius:6px;padding:10px 12px;margin-top:8px;}
+.total-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;}
+.total-grand{font-size:16px;font-weight:700;color:var(--accent);border-top:2px solid var(--accent);margin-top:6px;padding-top:6px;}
+
+.save-row{display:flex;gap:8px;margin-top:10px;}
+.save-row .btn{flex:1;text-align:center;}
+
+.hist-card{background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:3px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.hist-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;}
+.hist-total{font-size:15px;color:var(--accent);font-weight:700;margin-bottom:6px;}
+.hist-items{font-size:11px;color:#555;margin-bottom:6px;}
+.hist-actions{display:flex;gap:6px;}
+
+.printer-status{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--green-light);border-radius:6px;margin-bottom:12px;font-size:12px;}
+.status-dot{width:12px;height:12px;border-radius:50%;background:#ccc;flex-shrink:0;}
+.status-dot.connected{background:#4caf50;}
+.status-dot.trying{background:#ff9800;animation:pulse .8s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a3c2e;color:#fff;padding:10px 20px;border-radius:20px;font-size:12px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:14px;letter-spacing:1px;margin-bottom:14px;color:var(--accent);text-transform:uppercase;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;}
+.modal-actions .btn{flex:1;}
+
+#installBanner{display:none;background:var(--accent2);color:#fff;padding:10px 14px;font-size:12px;text-align:center;}
+#installBanner button{background:#fff;color:var(--accent);border:none;padding:4px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:8px;font-family:var(--font);}
+
+/* ── 80MM THERMAL PRINT STYLES ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body>*:not(#printArea){display:none!important;}
+  #printArea{display:block!important;}
+  #printArea *{visibility:visible;}
+}
+#printArea{display:none;}
+.receipt{font-family:'Courier New',monospace;font-size:12px;width:72mm;margin:0 auto;padding:4mm;}
+.receipt-header{text-align:center;margin-bottom:4mm;}
+.receipt-title{font-size:20px;font-weight:900;letter-spacing:4px;margin-bottom:2px;}
+.receipt-no{font-size:11px;margin-bottom:1px;}
+.receipt-date{font-size:11px;}
+.receipt-divider{border:none;border-top:1px dashed #000;margin:3mm 0;}
+.receipt-items{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:2mm;}
+.receipt-items th{text-align:left;font-size:10px;border-bottom:1px solid #000;padding-bottom:2mm;padding-right:3mm;}
+.receipt-items td{padding:1.5mm 0;padding-right:3mm;vertical-align:top;}
+.receipt-items .tr{text-align:right;padding-right:0;}
+.receipt-total-row{display:flex;justify-content:space-between;font-size:12px;padding:1mm 0;}
+.receipt-grand{font-size:15px;font-weight:900;border-top:2px solid #000;margin-top:2mm;padding-top:2mm;display:flex;justify-content:space-between;}
+.receipt-footer{margin-top:0;padding-top:0;}
+.receipt-gap{height:38mm;} /* 1.5 inch gap */
+.receipt-thankyou{text-align:center;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:2mm;}
+.receipt-closed{text-align:center;font-size:11px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<div id="installBanner">
+  📲 Install TrueGem POS as an app
+  <button onclick="installApp()">Install Now</button>
+  <button onclick="this.parentElement.style.display='none'" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);">✕</button>
+</div>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">TRUEGEM</div>
+    <div class="topbar-sub">POS · BILLING</div>
+  </div>
+  <div class="gift-badge">
+    <small>ESTIMATE NO</small>
+    <strong id="giftNoDisplay">—</strong>
+  </div>
+  <button class="printer-btn" onclick="showPage('printer')">
+    <span class="printer-dot" id="printerDot"></span>
+    <span id="printerLabel">Printer</span>
+  </button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-billing"   onclick="showPage('billing')">🧾 Billing</div>
+  <div class="tab"        id="tab-history"   onclick="showPage('history')">📋 History</div>
+  <div class="tab"        id="tab-inventory" onclick="showPage('inventory')">📦 Inventory</div>
+  <div class="tab"        id="tab-printer"   onclick="showPage('printer')">📡 Printer</div>
+</div>
+
+<!-- ══ BILLING ══ -->
+<div class="page active" id="pg-billing">
+  <div class="card">
+    <div class="mode-row">
+      <button class="mode-btn active" id="btnNormal" onclick="setMode('normal')">Normal Mode</button>
+      <button class="mode-btn"        id="btnCalc"   onclick="setMode('calc')">🧮 Calculator</button>
+    </div>
+    <div class="ctitle">Add Item</div>
+
+    <div id="normalRow">
+      <div class="suggest-wrap">
+        <input type="text" id="codeInput" placeholder="Enter product code or name…"
+          oninput="lookupCode(this.value)" onkeydown="codeKD(event)"
+          autocomplete="off" onfocus="lookupCode(this.value)"/>
+        <div id="suggestBox"></div>
+      </div>
+      <div class="prod-disp empty" id="prodDisp">— product name —</div>
+    </div>
+    <div id="calcRow" style="display:none;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Items will be numbered automatically.</div>
+    </div>
+
+    <div class="input-row">
+      <span class="lbl">QTY</span>
+      <input type="number" id="qtyInput" value="1" min="1" style="width:65px;" oninput="calcAmt()" onfocus="this.select()" onkeydown="itemKD(event)"/>
+      <span class="lbl">RATE</span>
+      <input type="number" id="rateInput" placeholder="0.00" style="width:85px;" oninput="calcAmt()" onfocus="this.select()" onkeydown="itemKD(event)"/>
+      <span class="lbl">=</span>
+      <div class="amt-box" id="amtBox">0.00</div>
+      <button class="btn btn-primary btn-sm" onclick="addItem()">+Add</button>
+      <button class="btn btn-outline btn-sm" onclick="clearEntry()">✕</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Items</div>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Sr.</th><th>Product</th><th class="tr">Qty</th><th class="tr">Rate</th><th class="tr">Amt</th><th class="tc">Del</th></tr></thead>
+        <tbody id="itemsBody"><tr><td colspan="6" class="etbl">No items yet.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="totals" id="totalsBox" style="display:none;">
+      <div class="total-row total-grand"><span>TOTAL</span><span id="totalVal">0.00</span></div>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <button class="btn btn-outline"  onclick="saveEstimate(false)">💾 Save</button>
+    <button class="btn btn-primary"  onclick="saveEstimate(true)">🖨 Save &amp; Print</button>
+  </div>
+  <div style="margin-top:8px;">
+    <button class="btn btn-sm" onclick="discardBill()" style="width:100%;color:var(--danger);border-color:var(--danger);background:transparent;">🗑 Discard Bill</button>
+  </div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div class="page" id="pg-history">
+  <div class="card" style="padding:10px;">
+    <input type="text" id="histSearch" placeholder="Search estimate no, date, product…" oninput="renderHistory()"/>
+  </div>
+  <div id="histList"><div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;">No estimates saved yet.</div></div>
+</div>
+
+<!-- ══ INVENTORY ══ -->
+<div class="page" id="pg-inventory">
+  <div class="card">
+    <div class="ctitle">Add / Update Product</div>
+    <div class="input-row" style="margin-bottom:10px;">
+      <input type="text" id="invCode" placeholder="Code e.g. 103" style="width:110px;flex-shrink:0;"/>
+      <input type="text" id="invName" placeholder="Product Name" onkeydown="if(event.key==='Enter')addProduct()"/>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="addProduct()">+ Add Product</button>
+  </div>
+  <div class="card">
+    <div class="input-row" style="margin-bottom:8px;">
+      <input type="text" id="invSearch" placeholder="Search by code or name…" oninput="renderInventory()"/>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="invCount">0 products</div>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Code</th><th>Name</th><th class="tc">Actions</th></tr></thead>
+        <tbody id="invBody"><tr><td colspan="3" class="etbl">No products.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRINTER ══ -->
+<div class="page" id="pg-printer">
+  <div class="card">
+    <div class="ctitle">Print Server Settings</div>
+    <div class="printer-status">
+      <div class="status-dot" id="statusDot"></div>
+      <div id="statusText">Not connected</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+      Enter the IP address of the phone running the <b>Termux print server</b>.<br>
+      Both phones must be on the same WiFi network.
+    </div>
+    <div class="input-row" style="margin-bottom:8px;">
+      <span class="lbl">Server IP</span>
+      <input type="text" id="printerIp" placeholder="e.g. 192.168.1.100"/>
+    </div>
+    <div class="input-row" style="margin-bottom:12px;">
+      <span class="lbl">Port</span>
+      <input type="text" id="printerPort" placeholder="3000" style="width:80px;"/>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="savePrinterSettings()">💾 Save</button>
+      <button class="btn btn-outline btn-sm" onclick="testConnection()">🔌 Test Connection</button>
+      <button class="btn btn-outline btn-sm" onclick="testPrint()">🖨 Test Print</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Browser Print (No Server Needed)</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Prints last saved estimate using your phone's built-in print dialog.</div>
+    <button class="btn btn-outline btn-sm" onclick="browserPrint()">🖨 Print via Browser</button>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Termux Server Setup Guide</div>
+    <div style="font-size:11px;color:#444;line-height:1.8;">
+      On the Android phone connected to printer:<br><br>
+      1. Install <b>Termux</b> from F-Droid (free)<br>
+      2. Open Termux and run:<br>
+      <div style="background:#1a3c2e;color:#a5d6a7;padding:8px 10px;border-radius:6px;margin:6px 0;font-size:11px;word-break:break-all;">
+        pkg update -y && pkg install nodejs -y<br>
+        mkdir printserver && cd printserver<br>
+        npm init -y<br>
+        npm install express cors escpos escpos-usb<br>
+        node server.js
+      </div>
+      3. Upload <b>server.js</b> (download below) to that phone<br>
+      4. Note the IP shown in Termux — enter it above
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-outline btn-sm" onclick="downloadServerJS()">⬇ Download server.js</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRINT AREA ══ -->
+<div id="printArea"></div>
+
+<!-- ══ TOAST ══ -->
+<div id="toast"></div>
+
+<!-- ══ DISCARD MODAL ══ -->
+<div class="overlay" id="discardOv">
+  <div class="modal">
+    <h3>⚠️ Discard Bill</h3>
+    <p style="font-size:12px;color:var(--muted);">Clear all current items?</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('discardOv')">Cancel</button>
+      <button class="btn btn-danger"  onclick="confirmDiscard()">Discard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BILL DETAIL MODAL ══ -->
+<div class="overlay" id="billDetailOv">
+  <div class="modal" id="billDetailContent"></div>
+</div>
+
+<!-- ══ EDIT PRODUCT MODAL ══ -->
+<div class="overlay" id="editProdOv">
+  <div class="modal">
+    <h3>Edit Product</h3>
+    <div style="margin-bottom:8px;">
+      <div class="ctitle">Code</div>
+      <input type="text" id="editProdCode" readonly style="background:#f5f5f5;"/>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div class="ctitle">Name</div>
+      <input type="text" id="editProdName"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('editProdOv')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  INDEXEDDB — PERMANENT STORAGE
+// ══════════════════════════════════════════════════════
+const DB_NAME='TrueGemPOS', DB_VER=1;
+let db=null;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('store')) d.createObjectStore('store');
+    };
+    req.onsuccess=e=>{ db=e.target.result; res(db); };
+    req.onerror=e=>rej(e);
+  });
+}
+function dbSet(key,val){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('store','readwrite');
+    tx.objectStore('store').put(val,key);
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+function dbGet(key){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('store','readonly');
+    const req=tx.objectStore('store').get(key);
+    req.onsuccess=()=>res(req.result??null);
+    req.onerror=e=>rej(e);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let products={}, bills=[], printerCfg={ip:'',port:'3000',connected:false};
+let cur=null, billingMode='normal', selectedProduct=null;
+
+function todayKey(){
+  const d=new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+async function nextGiftNo(){
+  const key='daily_'+todayKey();
+  const n=await dbGet(key)||0;
+  const next=n+1;
+  await dbSet(key,next);
+  const d=new Date();
+  const dd=String(d.getDate()).padStart(2,'0');
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const yy=String(d.getFullYear()).slice(-2);
+  return `${dd}${mm}${yy}-${next}`;
+}
+function defaultProducts(){
+  return {'1':'Photo Frame','2':'Pen','3':'Notebook','4':'Stapler','5':'Calculator','101':'Mug','102':'Scissors'};
+}
+
+// ══════════════════════════════════════════════════════
+//  SAVE / LOAD
+// ══════════════════════════════════════════════════════
+async function saveAll(){
+  try{
+    await Promise.all([
+      dbSet('products',products),
+      dbSet('bills',bills),
+      dbSet('printer',printerCfg),
+      cur ? dbSet('draft',cur) : Promise.resolve()
+    ]);
+  }catch(e){ showToast('⚠️ Save error'); }
+}
+
+async function loadAll(){
+  try{
+    const [p,b,pr,dr]=await Promise.all([
+      dbGet('products'), dbGet('bills'), dbGet('printer'), dbGet('draft')
+    ]);
+    products   = p  || defaultProducts();
+    bills      = b  || [];
+    printerCfg = pr || {ip:'',port:'3000',connected:false};
+
+    if(dr && dr.dateKey===todayKey()){
+      cur=dr;
+      document.getElementById('giftNoDisplay').textContent=cur.giftNo||'—';
+      renderItems();
+    } else {
+      await initBill();
+    }
+    updatePrinterDot();
+    renderInventory();
+    renderHistory();
+    showToast('✅ Data loaded');
+  }catch(e){
+    products=defaultProducts(); bills=[]; printerCfg={ip:'',port:'3000',connected:false};
+    await initBill();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  BILL
+// ══════════════════════════════════════════════════════
+async function initBill(){
+  const gno=await nextGiftNo();
+  cur={giftNo:gno, dateKey:todayKey(), date:fmtDate(new Date()), items:[], saved:false};
+  document.getElementById('giftNoDisplay').textContent=gno;
+  renderItems(); clearEntry();
+}
+function fmtDate(d){
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+// ══════════════════════════════════════════════════════
+//  PAGES / TABS
+// ══════════════════════════════════════════════════════
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='history')   renderHistory();
+  if(name==='inventory') renderInventory();
+  if(name==='printer')   loadPrinterUI();
+}
+
+// ══════════════════════════════════════════════════════
+//  MODE
+// ══════════════════════════════════════════════════════
+function setMode(mode){
+  billingMode=mode;
+  document.getElementById('btnNormal').classList.toggle('active',mode==='normal');
+  document.getElementById('btnCalc').classList.toggle('active',mode==='calc');
+  document.getElementById('normalRow').style.display=mode==='normal'?'block':'none';
+  document.getElementById('calcRow').style.display=mode==='calc'?'block':'none';
+  clearEntry();
+  setTimeout(()=>{
+    if(mode==='normal') document.getElementById('codeInput').focus();
+    else document.getElementById('qtyInput').focus();
+  },50);
+}
+
+// ══════════════════════════════════════════════════════
+//  PRODUCT LOOKUP
+// ══════════════════════════════════════════════════════
+function lookupCode(val){
+  selectedProduct=null;
+  const disp=document.getElementById('prodDisp');
+  const box=document.getElementById('suggestBox');
+  const v=val.trim().toLowerCase();
+  if(!v){ disp.textContent='— product name —'; disp.className='prod-disp empty'; box.style.display='none'; return; }
+
+  const exactKey=Object.keys(products).find(k=>k.toLowerCase()===v);
+  if(exactKey){ selectSuggest(exactKey,false); return; }
+
+  const matches=Object.keys(products).filter(k=>
+    k.toLowerCase().includes(v)||products[k].toLowerCase().includes(v)
+  );
+  if(matches.length===0){
+    disp.textContent='Manual item — will be added as typed'; disp.className='prod-disp empty';
+    box.style.display='none'; return;
+  }
+  if(matches.length===1){ selectSuggest(matches[0],false); return; }
+
+  box.innerHTML=matches.slice(0,8).map(k=>
+    `<div class="sug-item" onclick="selectSuggest('${k}',true)">
+      <span class="sug-code">${k}</span>${products[k]}
+    </div>`).join('');
+  box.style.display='block';
+}
+
+function selectSuggest(code, updateInput=true){
+  selectedProduct={code,name:products[code]};
+  if(updateInput) document.getElementById('codeInput').value=code;
+  const disp=document.getElementById('prodDisp');
+  disp.textContent=products[code]; disp.className='prod-disp';
+  document.getElementById('suggestBox').style.display='none';
+  setTimeout(()=>document.getElementById('qtyInput').focus(),50);
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#codeInput')&&!e.target.closest('#suggestBox'))
+    document.getElementById('suggestBox').style.display='none';
+});
+function codeKD(e){
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    // Only move to qty if a product is selected or code has value
+    const codeVal = document.getElementById('codeInput').value.trim();
+    if(codeVal) document.getElementById('qtyInput').focus();
+  }
+}
+function itemKD(e){
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    const active = document.activeElement;
+    if(active.id==='qtyInput'){
+      document.getElementById('rateInput').focus();
+      document.getElementById('rateInput').select();
+    } else if(active.id==='rateInput'){
+      addItem();
+    }
+  }
+}
+function calcAmt(){
+  const q=parseFloat(document.getElementById('qtyInput').value)||0;
+  const r=parseFloat(document.getElementById('rateInput').value)||0;
+  document.getElementById('amtBox').textContent=(q*r).toFixed(2);
+}
+
+// ══════════════════════════════════════════════════════
+//  ADD ITEM
+// ══════════════════════════════════════════════════════
+function addItem(){
+  const qty=parseFloat(document.getElementById('qtyInput').value);
+  const rate=parseFloat(document.getElementById('rateInput').value);
+  if(!qty||qty<=0){showToast('Enter quantity');return;}
+  if(!rate||rate<=0){showToast('Enter rate');return;}
+
+  if(billingMode==='calc'){
+    const n=cur.items.length+1;
+    cur.items.push({code:String(n),name:'',qty,rate,amount:+(qty*rate).toFixed(2),calcMode:true});
+  } else {
+    if(selectedProduct){
+      cur.items.push({code:selectedProduct.code,name:selectedProduct.name,qty,rate,amount:+(qty*rate).toFixed(2)});
+    } else {
+      const codeVal=document.getElementById('codeInput').value.trim()||'?';
+      cur.items.push({code:codeVal,name:codeVal,qty,rate,amount:+(qty*rate).toFixed(2)});
+    }
+  }
+  cur.saved=false;
+  renderItems();
+  clearEntry();
+  saveAll();
+  showToast('✅ Item added');
+  if(billingMode==='normal') document.getElementById('codeInput').focus();
+  else document.getElementById('qtyInput').focus();
+}
+
+function clearEntry(){
+  document.getElementById('qtyInput').value='1';
+  document.getElementById('rateInput').value='';
+  document.getElementById('amtBox').textContent='0.00';
+  if(billingMode==='normal'){
+    document.getElementById('codeInput').value='';
+    const d=document.getElementById('prodDisp');
+    d.textContent='— product name —'; d.className='prod-disp empty';
+    document.getElementById('suggestBox').style.display='none';
+    selectedProduct=null;
+  }
+}
+function removeItem(i){ cur.items.splice(i,1); cur.saved=false; renderItems(); saveAll(); }
+
+// ══════════════════════════════════════════════════════
+//  RENDER ITEMS
+// ══════════════════════════════════════════════════════
+function renderItems(){
+  const tbody=document.getElementById('itemsBody');
+  if(!cur||!cur.items||cur.items.length===0){
+    tbody.innerHTML='<tr><td colspan="6" class="etbl">No items yet.</td></tr>';
+    document.getElementById('totalsBox').style.display='none'; return;
+  }
+  let total=0;
+  tbody.innerHTML=cur.items.map((it,i)=>{
+    total+=it.amount;
+    return `<tr>
+      <td>${i+1}</td><td>${it.calcMode ? '' : it.name}</td>
+      <td class="tr">${it.qty}</td>
+      <td class="tr">${it.rate.toFixed(2)}</td>
+      <td class="tr">${it.amount.toFixed(2)}</td>
+      <td class="tc"><button class="del-btn" onclick="removeItem(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('totalVal').textContent='₹ '+total.toFixed(2);
+  document.getElementById('totalsBox').style.display='block';
+}
+
+// ══════════════════════════════════════════════════════
+//  SAVE ESTIMATE
+// ══════════════════════════════════════════════════════
+async function saveEstimate(andPrint){
+  if(!cur.items||cur.items.length===0){showToast('Add items first');return;}
+  const total=cur.items.reduce((s,i)=>s+i.amount,0);
+  const bill={...cur,total:+total.toFixed(2),savedAt:new Date().toISOString()};
+  bills.unshift(bill);
+  if(bills.length>1000) bills=bills.slice(0,1000);
+  cur.saved=true;
+  await saveAll();
+  showToast('✅ Estimate saved!');
+  renderHistory();
+  if(andPrint) printBill(bill);
+  setTimeout(()=>initBill(),300);
+}
+
+async function discardBill(){
+  if(!cur||cur.items.length===0){await initBill();return;}
+  document.getElementById('discardOv').classList.add('open');
+}
+async function confirmDiscard(){ closeModal('discardOv'); await initBill(); }
+
+// ══════════════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════════════
+function renderHistory(){
+  const q=(document.getElementById('histSearch')?.value||'').toLowerCase();
+  const filtered=bills.filter(b=>{
+    if(!q) return true;
+    return (b.giftNo||'').toLowerCase().includes(q)||
+           (b.date||'').includes(q)||
+           (b.items||[]).some(i=>(i.name||'').toLowerCase().includes(q));
+  });
+  const list=document.getElementById('histList');
+  if(filtered.length===0){
+    list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;">No estimates found.</div>'; return;
+  }
+  list.innerHTML=filtered.map((b,i)=>{
+    const preview=(b.items||[]).slice(0,2).map(it=>it.name).join(', ')+(b.items.length>2?'…':'');
+    return `<div class="hist-card">
+      <div class="hist-meta"><span>📋 ${b.giftNo||'—'}</span><span>${b.date||''}</span></div>
+      <div class="hist-items">${preview||'—'}</div>
+      <div class="hist-total">₹ ${(b.total||0).toFixed(2)}</div>
+      <div class="hist-actions">
+        <button class="btn btn-outline btn-sm" onclick="viewBill(${i})">👁 View</button>
+        <button class="btn btn-primary btn-sm" onclick="reprintBill(${i})">🖨 Print</button>
+        <button class="btn btn-danger   btn-sm" onclick="deleteBill(${i})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewBill(idx){
+  const b=bills[idx];
+  const rows=(b.items||[]).map(it=>
+    `<div class="total-row"><span>${it.name} × ${it.qty} @ ₹${it.rate.toFixed(2)}</span><span>₹${it.amount.toFixed(2)}</span></div>`
+  ).join('');
+  document.getElementById('billDetailContent').innerHTML=`
+    <h3>📋 ${b.giftNo}</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">${b.date}</div>
+    <div class="totals">${rows}
+      <div class="total-row total-grand"><span>TOTAL</span><span>₹${(b.total||0).toFixed(2)}</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('billDetailOv')">Close</button>
+      <button class="btn btn-primary" onclick="reprintBill(${idx});closeModal('billDetailOv')">🖨 Print</button>
+    </div>`;
+  document.getElementById('billDetailOv').classList.add('open');
+}
+function reprintBill(idx){ printBill(bills[idx]); }
+async function deleteBill(idx){
+  bills.splice(idx,1); await saveAll(); renderHistory(); showToast('Deleted');
+}
+
+// ══════════════════════════════════════════════════════
+//  INVENTORY
+// ══════════════════════════════════════════════════════
+function renderInventory(){
+  const q=(document.getElementById('invSearch')?.value||'').toLowerCase();
+  const keys=Object.keys(products).filter(k=>
+    !q||k.toLowerCase().includes(q)||products[k].toLowerCase().includes(q)
+  );
+  document.getElementById('invCount').textContent=keys.length+' products';
+  const tbody=document.getElementById('invBody');
+  if(keys.length===0){tbody.innerHTML='<tr><td colspan="3" class="etbl">No products.</td></tr>';return;}
+  tbody.innerHTML=keys.map(k=>`
+    <tr>
+      <td>${k}</td><td>${products[k]}</td>
+      <td class="tc">
+        <button class="edit-btn" onclick="editProduct('${k}')">✏️</button>
+        <button class="del-btn"  onclick="deleteProduct('${k}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+async function addProduct(){
+  const code=document.getElementById('invCode').value.trim();
+  const name=document.getElementById('invName').value.trim();
+  if(!code||!name){showToast('Enter code and name');return;}
+  products[code]=name;
+  document.getElementById('invCode').value='';
+  document.getElementById('invName').value='';
+  await saveAll(); renderInventory();
+  showToast('Added: '+code+' → "'+name+'"');
+}
+async function deleteProduct(code){
+  delete products[code]; await saveAll(); renderInventory(); showToast('Deleted: '+code);
+}
+function editProduct(code){
+  document.getElementById('editProdCode').value=code;
+  document.getElementById('editProdName').value=products[code];
+  document.getElementById('editProdOv').classList.add('open');
+}
+async function saveEditProduct(){
+  const code=document.getElementById('editProdCode').value;
+  const name=document.getElementById('editProdName').value.trim();
+  if(!name){showToast('Enter name');return;}
+  products[code]=name; closeModal('editProdOv');
+  await saveAll(); renderInventory(); showToast('Updated!');
+}
+
+// ══════════════════════════════════════════════════════
+//  PRINTER
+// ══════════════════════════════════════════════════════
+function loadPrinterUI(){
+  document.getElementById('printerIp').value=printerCfg.ip||'';
+  document.getElementById('printerPort').value=printerCfg.port||'3000';
+  updatePrinterDot();
+}
+function updatePrinterDot(){
+  const on=printerCfg.connected&&printerCfg.ip;
+  document.getElementById('printerDot').className='printer-dot'+(on?' on':'');
+  const sd=document.getElementById('statusDot');
+  const st=document.getElementById('statusText');
+  if(sd) sd.className='status-dot'+(on?' connected':'');
+  if(st) st.textContent=on?'Connected: '+printerCfg.ip:(printerCfg.ip?'Saved (not tested)':'Not configured');
+  document.getElementById('printerLabel').textContent=on?'🟢 Printer':'Printer';
+}
+async function savePrinterSettings(){
+  printerCfg.ip=document.getElementById('printerIp').value.trim();
+  printerCfg.port=document.getElementById('printerPort').value.trim()||'3000';
+  await saveAll(); updatePrinterDot(); showToast('Printer settings saved');
+}
+async function testConnection(){
+  const ip=document.getElementById('printerIp').value.trim();
+  const port=document.getElementById('printerPort').value.trim()||'3000';
+  if(!ip){showToast('Enter server IP first');return;}
+  showToast('Testing connection…');
+  try{
+    const r=await fetch(`http://${ip}:${port}/ping`,{signal:AbortSignal.timeout(4000)});
+    if(r.ok){
+      printerCfg.connected=true; printerCfg.ip=ip; printerCfg.port=port;
+      await saveAll(); updatePrinterDot(); showToast('✅ Server connected!');
+    } else { showToast('❌ Server responded with error'); }
+  }catch(e){ showToast('❌ Cannot reach server at '+ip+':'+port); }
+}
+async function testPrint(){
+  const ip=printerCfg.ip||document.getElementById('printerIp').value.trim();
+  const port=printerCfg.port||'3000';
+  if(!ip){showToast('Enter server IP first');return;}
+  try{
+    const r=await fetch(`http://${ip}:${port}/print`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'test'}),
+      signal:AbortSignal.timeout(5000)
+    });
+    if(r.ok) showToast('🖨 Test print sent!');
+    else showToast('❌ Print failed');
+  }catch(e){ showToast('❌ Cannot reach print server'); }
+}
+
+// ══════════════════════════════════════════════════════
+//  PRINT
+// ══════════════════════════════════════════════════════
+function buildReceiptHTML(bill){
+  const rows=(bill.items||[]).map(it=>`
+    <tr>
+      <td>${it.name}</td>
+      <td class="tr">${it.qty}</td>
+      <td class="tr">${it.rate.toFixed(2)}</td>
+      <td class="tr">${it.amount.toFixed(2)}</td>
+    </tr>`).join('');
+  return `<div class="receipt">
+    <div class="receipt-header">
+      <div class="receipt-title">ESTIMATE</div>
+      <div class="receipt-no">No: ${bill.giftNo||'—'}</div>
+      <div class="receipt-date">Date: ${bill.date||''}</div>
+    </div>
+    <hr class="receipt-divider"/>
+    <table class="receipt-items">
+      <thead><tr><th>Item</th><th class="tr">Qty</th><th class="tr">Rate</th><th class="tr">Amt</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <hr class="receipt-divider"/>
+    <div class="receipt-grand"><span>TOTAL</span><span>Rs. ${(bill.total||0).toFixed(2)}</span></div>
+    <div class="receipt-footer">
+      <div class="receipt-gap"></div>
+      <div class="receipt-thankyou">THANK YOU</div>
+      <div class="receipt-closed">SUNDAY CLOSED</div>
+    </div>
+  </div>`;
+}
+
+async function printBill(bill){
+  document.getElementById('printArea').innerHTML=buildReceiptHTML(bill);
+
+  // Try print server first
+  if(printerCfg.ip && printerCfg.connected){
+    try{
+      const r=await fetch(`http://${printerCfg.ip}:${printerCfg.port}/print`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'bill', bill}),
+        signal:AbortSignal.timeout(6000)
+      });
+      if(r.ok){ showToast('🖨 Printed!'); return; }
+    }catch(e){}
+    showToast('Print server offline — using browser print');
+  }
+  // Fallback to browser print
+  setTimeout(()=>window.print(), 200);
+}
+
+function browserPrint(){
+  if(bills.length>0){
+    document.getElementById('printArea').innerHTML=buildReceiptHTML(bills[0]);
+  }
+  setTimeout(()=>window.print(),200);
+}
+
+// ══════════════════════════════════════════════════════
+//  DOWNLOAD server.js
+// ══════════════════════════════════════════════════════
+function downloadServerJS(){
+  const code=`// TrueGem POS — Print Server
+// Run on Android with Termux + Node.js
+// Commands: pkg install nodejs && npm install express cors escpos escpos-usb
+
+const express = require('express');
+const cors    = require('cors');
+const app     = express();
+const PORT    = 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Health check
+app.get('/ping', (req, res) => res.json({ ok: true, server: 'TrueGem Print Server' }));
+
+// Print endpoint
+app.post('/print', async (req, res) => {
+  const { type, bill } = req.body;
+  try {
+    const escpos  = require('escpos');
+    escpos.USB    = require('escpos-usb');
+    const devices = escpos.USB.findPrinter();
+    if (!devices.length) return res.status(500).json({ error: 'No USB printer found' });
+
+    const device  = new escpos.USB();
+    const printer = new escpos.Printer(device);
+
+    device.open(() => {
+      printer
+        .align('CT')
+        .size(1, 1)
+        .text('ESTIMATE')
+        .size(0, 0);
+
+      if (type === 'test') {
+        printer
+          .text('Test Print OK')
+          .text(new Date().toLocaleString())
+          .feed(3)
+          .cut()
+          .close();
+        return res.json({ ok: true });
+      }
+
+      // Real bill
+      printer
+        .text('No: ' + (bill.giftNo || '-'))
+        .text('Date: ' + (bill.date || ''))
+        .drawLine()
+        .align('LT');
+
+      (bill.items || []).forEach(it => {
+        const left  = (it.name || '').substring(0, 20).padEnd(20);
+        const right = ('x' + it.qty + ' ' + it.rate.toFixed(0)).padStart(8);
+        const amt   = ('Rs' + it.amount.toFixed(0)).padStart(6);
+        printer.text(left + right + amt);
+      });
+
+      printer
+        .drawLine()
+        .align('RT')
+        .text('TOTAL: Rs. ' + (bill.total || 0).toFixed(2))
+        .align('CT')
+        .feed(12)  // 1.5 inch gap (8 lines per inch x 1.5 = 12 lines)
+        .text('THANK YOU')
+        .text('SUNDAY CLOSED')
+        .feed(3)
+        .cut()
+        .close();
+
+      res.json({ ok: true });
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  let ip = 'unknown';
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) { ip = net.address; break; }
+    }
+  }
+  console.log('\\n✅ TrueGem Print Server running!');
+  console.log('📡 Your server IP: ' + ip);
+  console.log('🌐 Enter this IP in the billing app printer settings');
+  console.log('Port: ' + PORT + '\\n');
+});
+`;
+  const blob=new Blob([code],{type:'text/javascript'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='server.js';
+  a.click();
+  showToast('server.js downloaded!');
+}
+
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+let _tt=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  if(_tt) clearTimeout(_tt);
+  _tt=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ══════════════════════════════════════════════════════
+//  PWA INSTALL
+// ══════════════════════════════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('installBanner').style.display='block';
+});
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{
+    deferredPrompt=null;
+    document.getElementById('installBanner').style.display='none';
+  });
+}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
+openDB().then(()=>loadAll()).catch(e=>{
+  console.error(e);
+  products=defaultProducts(); bills=[];
+  initBill();
+});
+</script>
+</body>
+</html>
